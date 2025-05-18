@@ -18,8 +18,9 @@ $api.interceptors.response.use((config) => {
     return config;
 }, async (error) => {
     const orRequest = error.config;
-    if(error.response.status === 401) {
+    if(error.response.status === 401 && !orRequest.isRepeat) {
         try{
+            error.config.isRepeat = true;
             const response = await axios.get<AuthResponse>(`${API_URL}/refresh`, {withCredentials: true});
             localStorage.setItem('token', response.data.access);
             return $api.request(orRequest);
@@ -27,6 +28,7 @@ $api.interceptors.response.use((config) => {
             console.log('Unauthorized');
         }
     }
+    throw error;
 })
 
 export default $api;
